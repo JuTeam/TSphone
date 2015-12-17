@@ -1,105 +1,24 @@
 var wmaps = function() {
-    var map, layer, vectorLayer, vectorLayerline, vectorLayerregion, selectFeature, wlayer, drawPointlj, markers, markerspath;
+    var map, 
+    //唐山地图所属的layer
+    layer, 
+    //线路所属的layer
+    vectorLayer, 
+    //线所属的layer
+    vectorLayerline,
+    //面所属的layer
+    vectorLayerregion, 
+    selectFeature, 
+    //底图所属的layer
+    wlayer, 
+    drawPointlj, 
+    //标记点的markers
+    markers, 
+    //线路上标记点的markers
+    markerspath;
     //储存路径规划途径点
     var nodeArray = [];
-    //站点内容集合 
-    /*var buspoint = [{
-
-        "lng": 105.39961111447532,
-        "lat": 27.19139475853698,
-        "num": 0,
-        "name": "站1"
-    }, {
-        "lng": 105.39968066113993,
-        "lat": 27.191459298914314,
-        "num": 1,
-        "name": "站2"
-    }, {
-
-        "lng": 105.39982592692373,
-        "lat": 27.191487940745933,
-        "num": 2,
-        "name": "站3"
-    }, {
-
-        "lng": 105.40004687259545,
-        "lat": 27.191345926152,
-        "num": 3,
-        "name": "站4"
-    }, {
-
-        "lng": 105.39990122860354,
-        "lat": 27.19120426927282,
-        "num": 4,
-        "name": "站5"
-    }, {
-
-        "lng": 105.39961942488763,
-        "lat": 27.191252640440752,
-        "num": 5,
-        "name": "站6"
-    }, {
-
-        "lng": 105.3996110344963,
-        "lat": 27.191394636563309,
-        "num": 6,
-        "name": "站7"
-    }, {
-
-        "lng": 105.40062140612662,
-        "lat": 27.192524057619341,
-        "num": 7,
-        "name": "站8"
-    }, {
-
-        "lng": 105.4004181119974,
-        "lat": 27.191939382394281,
-        "num": 8,
-        "name": "站9"
-    }, {
-
-        "lng": 105.40022570992932,
-        "lat": 27.191386032807159,
-        "num": 9,
-        "name": "站10"
-    }, {
-
-        "lng": 105.40009650024739,
-        "lat": 27.1915304445673,
-        "num": 10,
-        "name": "站11"
-    }, {
-
-        "lng": 105.39989600703702,
-        "lat": 27.191559843495209,
-        "num": 11,
-        "name": "站12"
-    }, {
-
-        "lng": 105.39972824899976,
-        "lat": 27.191750171434784,
-        "num": 12,
-        "name": "站13"
-    }, {
-
-        "lng": 105.40008020339452,
-        "lat": 27.191982081561576,
-        "num": 13,
-        "name": "站14"
-    }, {
-
-        "lng": 105.40032862981468,
-        "lat": 27.192413173337453,
-        "num": 14,
-        "name": "站15"
-    }, {
-
-        "lng": 105.40062147677709,
-        "lat": 27.192524260810554,
-        "num": 15,
-        "name": "站16"
-    }];*/
-    
+    //站点内容集合
     var buspoint = [{
         "lng": 109.05940300380507,
         "lat": 35.653358237747945,
@@ -170,7 +89,7 @@ var wmaps = function() {
     };
     var styleGuideLine = {
         strokeColor: "#D94600",
-        dataid: 99,
+        
         strokeWidth: 5,
         fill: false
     };
@@ -190,8 +109,9 @@ var wmaps = function() {
         callbackfuc: function() {}
     };
 
-
+    //用于存储面对象的自定义样式
     var myClassregion = [];
+    //用户存储线对象的自定义样式
     var myClassline = [];
 
     function init(options) {
@@ -203,15 +123,7 @@ var wmaps = function() {
         //初始化标记图层类
         markers = new SuperMap.Layer.Markers("Markers");
         markerspath = new SuperMap.Layer.Markers("Markerspath");
-        /*
-        drawPointlj = new SuperMap.Control.DrawFeature(vectorLayer, SuperMap.Handler.Point);
-        selectFeature = new SuperMap.Control.SelectFeature(vectorLayer, {
-            onSelect: onFeatureSelect,
-            onUnselect: onFeatureUnselect
-        });
-        drawPointlj.events.on({
-            "featureadded": drawCompleted
-        });*/
+        
         //初始化地图
         map = new SuperMap.Map(opts.container, {
             controls: [
@@ -221,56 +133,37 @@ var wmaps = function() {
                     dragPanOptions: {
                         enableKinetic: true
                     }
-                }), //selectFeature, drawPointlj
+                }),
             ],
             allOverlays: true,
             units: "m"
         });
 
-        //添加click事件
+        //添加全局click事件，在控制台获取坐标数据
         map.events.on({
             "click": callbackFunction
         });
-        //全局变量，用于记录每次线面重构之前的样式对象
-        /*var myClassregion = [{
-            "regionId": 0,
-            "data-id": 0,
-            "class": "gsregion"
-        }];
-        var myClassline = [{
-            "lineid": 0,
-            "data-id": 0,
-            "class": "gsline"
-        }];*/
-
+        
+        //恢复自定义的样式到新生成的线或面对象上，在地图移动结束后
         map.events.on({
             "moveend": function() {
 
                 /*console.log(myClassregion, myClassline, "<--start");*/
 
                 $.each(myClassregion, function(index, val) {
-
                     var findidregion = val.regionid;
-
                     var objregion = $("#" + findidregion + "");
-
                     objregion.attr("data-id", val.regionDataid).attr("class", val.regionClass).attr("wfcfindtype", "region");
-
                 });
-
-
                 $.each(myClassline, function(index, val) {
-
                     var findidline = val.lineid;
-
                     var objline = $("#" + findidline + "");
-
                     objline.attr("data-id", val.lineDataid).attr("class", val.lineClass).attr("wfcfindtype", "line");
                 });
-
-
             }
         });
+        /*获取在最初绘制面或线时增加的自定义属性，在绘制时自定义了 class，data-id，wfcfindtype
+        在获取后进行比较，如果自定义的属性值有变化则记录最新的变化，否则保持原有状态*/
         map.events.on({
             "movestart": function() {
                 $.each(myClassregion, function(indexz, valz) {
@@ -292,7 +185,7 @@ var wmaps = function() {
             }
         });
 
-        //初始化图层
+        //初始化底图图层，如百度地图或天地图等
         wlayer = new SuperMap.Layer.TiledDynamicRESTLayer("Map", opts.urlword, {
             transparent: true,
             cacheEnabled: true
@@ -313,55 +206,49 @@ var wmaps = function() {
             cacheEnabled: true
         }, {
             maxResolution: "auto"
-        });
-
+        }); 
+        //加载第二层地图，就是唐山的地图
         layer.events.on({
-            "layerInitialized": addLayerdt
+            "layerInitialized": addLayerts
         });
     }
 
-    function addLayerdt() {
+    function addLayerts() {
         map.addLayers([wlayer, layer, vectorLayer, vectorLayerline, vectorLayerregion, markers, markerspath]);
         map.setCenter(new SuperMap.LonLat(109.07593852795, 35.630478192408), 11);
         //map.setCenter(new SuperMap.LonLat(105.400046872595, 27.191345926152), 1);
-
     }
-
+    //移动地图到指定的坐标
     function panTo(options) {
         var opts = $.extend(defaults, options || {});
         map.setCenter(new SuperMap.LonLat(opts.lng, opts.lat), map.zoom);
     }
-
+    //返回地图的等级
     function ZoomLevel() {
         return map.zoom;
     }
-
+    //重新定位地图中心点及对应的级别
     function ZoomAndCenter(options) {
         var opts = $.extend(defaults, options || {});
         map.setCenter(new SuperMap.LonLat(opts.lng, opts.lat), opts.level);
     }
-
+    //将地图调整到合适等级
     function fitmap() {
         var maplayer = map.getLayersByName("Markers");
         if (maplayer[0].markers.length > 1) {
             //计算所有的标记的最大范围
             var bounds = maplayer[0].getDataExtent();
             if (bounds) {
-                console.log(bounds.left+","+bounds.bottom+","+bounds.right+","+bounds.top);
-                //传入一个合适的bounds 会缩放的合适等级的bounds
-                //var newbounds = new SuperMap.Bounds(bounds.left*1.0001,bounds.bottom*1.0001,bounds.right*1.0001,bounds.top*1.0001); 
-                console.log(map.zoom+"<--start");
                 map.zoomToExtent(bounds, false);
-                console.log(map.zoom+"<--end");
             }
         } else if (maplayer[0].markers.length > 0) {
             panTo(maplayer[0].markers[0].lonlat.lon, maplayer[0].markers[0].lonlat.lat);
         }
     }
-
+    //地图点击事件回调
     function callbackFunction(e) {
         var lonlat = map.getLonLatFromPixel(new SuperMap.Pixel(e.xy.x, e.xy.y));
-        console.log("位置坐标：lng=" + lonlat.lon.toFixed(5) + ", lat=" + lonlat.lat.toFixed(5));
+        console.log('位置坐标："lng":' + lonlat.lon.toFixed(5) + ', "lat":' + lonlat.lat.toFixed(5));
 
     }
 
@@ -433,22 +320,42 @@ var wmaps = function() {
     //画点根据坐标
     function drawPointlatlng(options) {
         var opts = $.extend(defaults, options || {});
-        for (var i = 0; i < opts.latlngPile.length; i++) {
-          
-            var size = new SuperMap.Size(21, 25),
-                offset = new SuperMap.Pixel(-(size.w / 2), -size.h),
-                icon = new SuperMap.Icon("images/cluster2.png", size, offset);
-            marker = new SuperMap.Marker(new SuperMap.LonLat(opts.latlngPile[i].x, opts.latlngPile[i].y), icon);
-            if (opts.latlngPile.length == 1) {
-                $(marker.icon.imageDiv).attr('data-id',opts.ids[i]).attr('data-lat', opts.latlngPile[i].y).attr('data-lng', opts.latlngPile[i].x).addClass('gsmarker');
-            } else {
-                $(marker.icon.imageDiv).attr('data-id',opts.ids[i]).attr('data-lat', opts.latlngPile[i].y).attr('data-lng', opts.latlngPile[i].x).addClass('gsmarker').addClass('marker-' + i);
-            }
+        /*判断传入的一组坐标是否为超图的坐标对象，如果是责采用a方式进行取值画点。如果不是则说明是由页面
+        传入的一组坐标使用b方式进行画点*/
+        if (opts.latlngPile[0].x) {
+            
+            for (var i = 0; i < opts.latlngPile.length; i++) {
 
-            markers.addMarker(marker);
+                var size = new SuperMap.Size(21, 25),
+                    offset = new SuperMap.Pixel(-(size.w / 2), -size.h),
+                    icon = new SuperMap.Icon("images/cluster2.png", size, offset);
+                marker = new SuperMap.Marker(new SuperMap.LonLat(opts.latlngPile[i].x, opts.latlngPile[i].y), icon);
+                if (opts.latlngPile.length == 1) {
+                    $(marker.icon.imageDiv).attr('data-id', opts.ids[i]).attr('data-lat', opts.latlngPile[i].y).attr('data-lng', opts.latlngPile[i].x).addClass('gsmarker');
+                } else {
+                    $(marker.icon.imageDiv).attr('data-id', opts.ids[i]).attr('data-lat', opts.latlngPile[i].y).attr('data-lng', opts.latlngPile[i].x).addClass('gsmarker').addClass('marker-' + i);
+                }
+
+                markers.addMarker(marker);
+            }
+        } else {
+
+            for (var i = 0; i < opts.latlngPile.length; i++) {
+                var size = new SuperMap.Size(21, 25),
+                    offset = new SuperMap.Pixel(-(size.w / 2), -size.h),
+                    icon = new SuperMap.Icon("images/cluster2.png", size, offset);
+                marker = new SuperMap.Marker(new SuperMap.LonLat(opts.latlngPile[i].lng, opts.latlngPile[i].lat), icon);
+                if (opts.latlngPile.length == 1) {
+                    $(marker.icon.imageDiv).attr('w-id', opts.latlngPile[i].wid).attr('data-lat', opts.latlngPile[i].lat).attr('data-lng', opts.latlngPile[i].lng).addClass('gsmarker');
+                } else {
+                    $(marker.icon.imageDiv).attr('w-id', opts.latlngPile[i].wid).attr('data-lat', opts.latlngPile[i].lat).attr('data-lng', opts.latlngPile[i].lng).addClass('gsmarker').addClass('marker-' + i);
+                }
+                markers.addMarker(marker);
+            }
         }
+
     }
-    //画点回调
+    
     function processCompleted(queryEventArgs, opts) {
         var i, len, features, result = queryEventArgs.result;
         if (result.currentCount > 0) {
@@ -476,7 +383,7 @@ var wmaps = function() {
             opts.callbackfuc(result);
         }
     }
-
+    //根据id画面
     function drawRegion(options) {
         var opts = $.extend(defaults, options || {});
         vectorLayerregion.removeAllFeatures();
@@ -501,7 +408,6 @@ var wmaps = function() {
     }
 
     function processCompletedregion(queryEventArgs, opts) {
-
         var i, j, feature,
             result = queryEventArgs.result;
         if (result && result.recordsets) {
@@ -509,11 +415,14 @@ var wmaps = function() {
                 if (result.recordsets[i].features) {
                     for (j = 0; j < result.recordsets[i].features.length; j++) {
                         feature = result.recordsets[i].features[j];
+                        //获取面对应的dom对象id
                         var findid = feature.geometry.components[0].id;
                         document.getElementById("" + findid + "");
                         findid = findid.replace(/\./g, "\\.");
                         vectorLayerregion.addFeatures(feature);
+                        //把dom对象转为jquery对象
                         var obj = $("#" + findid + "");
+                        //向对象中增加自定义属性
                         obj.attr("data-id", feature.data.SmUserID).attr("class", "gsregion").attr("wfcfindtype", "region");
                         //在初始化时向公共变量传入要保持的自定义属性
                         var myClassObjectreiong = {};
@@ -524,11 +433,12 @@ var wmaps = function() {
                     }
                 }
             }
+            //执行传入的回调方法
             opts.callbackfuc(result);
         }
     }
 
-
+    //根据id画线
     function drawLine(options) {
         var opts = $.extend(defaults, options || {});
 
@@ -561,13 +471,14 @@ var wmaps = function() {
                 if (result.recordsets[i].features) {
                     for (j = 0; j < result.recordsets[i].features.length; j++) {
                         feature = result.recordsets[i].features[j];
-
+                        //获取面对应的dom对象id
                         var findid = feature.geometry.id;
-                        
+                        //因为获取的id中有特殊符号需要转译
                         findid = findid.replace(/\./g, "\\.");
-                        feature.style = styleGuideLine;
                         vectorLayerline.addFeatures(feature);
+                        //把dom对象转为jquery对象
                         var obj = $("#" + findid + "");
+                        //向对象中增加自定义属性
                         obj.attr("data-id", feature.data.SmUserID).attr("class", "gsline").attr("wfcfindtype", "line");
                         //在初始化时向公共变量传入要保持的自定义属性
                         var myClassObjectline = {};
@@ -575,19 +486,16 @@ var wmaps = function() {
                         myClassObjectline.lineClass = "gsline";
                         myClassObjectline.lineDataid = feature.data.SmUserID;
                         myClassline.push(myClassObjectline);
-
-
                     }
                 }
             }
             opts.callbackfuc(result);
         }
     }
-
+    //根据传入的点，与一组点返回传入点与一组点之间的距离，根据距离远近排序
     function findMinDisPoint(cp, parr) {
         var objs = [];
         for (var i = 0; i < parr.length; i++) {
-
             var point = parr[i].geometry;
             var d = getFlatternDistance(point.y, point.x, cp.y, cp.x);
             point.dataid = parr[i].data.SmID;
@@ -614,13 +522,11 @@ var wmaps = function() {
     function findMinPoint(cp, parr) {
         var objs = [];
         for (var i = 0; i < parr.length; i++) {
-
             var point = parr[i];
             var d = getFlatternDistance(point.lat, point.lng, cp.lat, cp.lng);
             point.dataid = parr[i].num;
             point.dataname = parr[i].name;
             point.distance = d;
-
             var obj = [point, d];
             objs.push(obj);
         }
@@ -711,16 +617,16 @@ var wmaps = function() {
         vectorLayerregion.refresh();
         vectorLayerline.refresh();
     }
-
+    //清除所有标记点
     function clearmarkers() {
         markers.clearMarkers();
     }
-
+    //清除所有线
     function clearline() {
         vectorLayerline.removeAllFeatures();
         vectorLayerline.refresh();
     }
-
+    //清除所有面
     function clearregion() {
         vectorLayerregion.removeAllFeatures();
         vectorLayerregion.refresh();
@@ -732,48 +638,7 @@ var wmaps = function() {
         vectorLayer.refresh();
     }
 
-    /*//创建点
-    function drawCompleted(drawGeometryArgs) {
-        var point = drawGeometryArgs.feature.geometry,
-            size = new SuperMap.Size(37, 38),
-            offset = new SuperMap.Pixel(-(size.w / 2), -size.h),
-            icon = new SuperMap.Icon("images/cluster3.png", size, offset);
-        markers.addMarker(new SuperMap.Marker(new SuperMap.LonLat(point.x, point.y), icon));
-        nodeArray.push(point);
-    }
-
-    function selectPoints() {
-        clearElements();
-        drawPointlj.activate();
-    }
-    //选中时显示路径指引信息
-    function onFeatureSelect(feature) {
-        if (feature.attributes.description) {
-            popup = new SuperMap.Popup("chicken",
-                feature.geometry.getBounds().getCenterLonLat(),
-                new SuperMap.Size(200, 30),
-                "<div style='font-size:.8em; opacity: 0.8'>" + feature.attributes.description + "</div>",
-                null, false);
-            feature.popup = popup;
-            map.addPopup(popup);
-        }
-        if (feature.geometry.CLASS_NAME != "SuperMap.Geometry.Point") {
-            feature.style = styleGuideLine;
-            vectorLayer.redraw();
-        }
-    }
-    //清除要素时调用此函数
-    function onFeatureUnselect(feature) {
-        map.removePopup(feature.popup);
-        feature.popup.destroy();
-        feature.popup = null;
-        if (feature.geometry.CLASS_NAME != "SuperMap.Geometry.Point") {
-            feature.style = style;
-        }
-        vectorLayer.redraw();
-    }*/
-
-
+    //公交线路分析
     function findbusPath(options) {
         var opts = $.extend(defaults, options || {});
         clearElements();
@@ -781,8 +646,6 @@ var wmaps = function() {
             alert("选择正确起始点!");
             return false;
         }
-        //gsmarker-from   gsmarker-to   gsmarker-via
-
         //最终的途径的公交站点
         var nodebus = [];
         //起始于结束的公交站点
@@ -804,16 +667,15 @@ var wmaps = function() {
 
         }
 
-        
         //返回的途径公交站编号
         var allbusnode = returnBusPointNum(nodebusse[0], nodebusse[1]);
-        if (allbusnode.length == 0) {
+        if (allbusnode.length === 0) {
             findPath(opts.StartEndlatlng);
         } else {
 
             for (var k = 0; k < allbusnode.length; k++) {
                 var zsdpoint = new SuperMap.Geometry.Point(buspoint[allbusnode[k]].lng, buspoint[allbusnode[k]].lat);
-                
+
                 nodebus.push(zsdpoint);
             }
 
@@ -852,6 +714,7 @@ var wmaps = function() {
             if (opts.StartEndlatlng.length <= 1) {
                 alert("站点数目有误");
             }
+
             findPathService = new SuperMap.REST.FindPathService(opts.urldtlw, {
                 eventListeners: {
                     "processCompleted": processCompletedly
@@ -860,7 +723,7 @@ var wmaps = function() {
             findPathService.processAsync(parameter);
         }
     }
-
+    //步行线路分析
     function findPath(options) {
         var opts = $.extend(defaults, options || {});
         clearElements();
@@ -930,7 +793,7 @@ var wmaps = function() {
     function allScheme(result) {
         if (pathListIndex < result.pathList.length) {
             addPath(result);
-            
+
         } else {
             pathListIndex = 0;
             //线绘制完成后会绘制关于路径指引点的信息
@@ -990,25 +853,20 @@ var wmaps = function() {
         var maplayerline = map.getLayersByName("Markerspath");
         var boundsline = maplayerline[0].getDataExtent();
         map.zoomToExtent(boundsline, false);
-      
-        //selectFeature.activate();
+
+        
     }
 
     function clearElements() {
         pathListIndex = 0;
         routeCompsIndex = 0;
-
-        /*selectFeature.deactivate();
-        if (vectorLayer.selectedFeatures.length > 0) {
-            map.removePopup(vectorLayer.selectedFeatures[0].popup);
-        }*/
         vectorLayer.removeAllFeatures();
         markerspath.clearMarkers();
     }
-
+    //判断一个点是否在某个面中，用来完成实时定位分析功能
     function pointIntersectsRegion(options) {
         var opts = $.extend(defaults, options || {});
-        //lng=109.06109, lat=35.65500
+       
         var point = new SuperMap.Geometry.Point(109.06109, 35.65500);
         var queryBySQLParams, queryService, queryParam;
         queryParam = new SuperMap.REST.FilterParameter({
@@ -1031,8 +889,6 @@ var wmaps = function() {
     }
 
     function processCompletedregionnr(queryEventArgs, p, f) {
-
-
         var i, j, feature,
             result = queryEventArgs.result;
         if (result && result.recordsets) {
@@ -1045,7 +901,6 @@ var wmaps = function() {
                             feature.style = style;
                             //vectorLayerregion.redraw();
                         }
-
                         vectorLayerregion.addFeatures(feature);
                     }
                 }
@@ -1061,6 +916,7 @@ var wmaps = function() {
     ////计算公交途径站与判断是否需要乘坐公交车的方法///////
     function oneBusPoint(qd, zd) {
         var xsnodes = [];
+        //公交线路的长度
         var sj = [0, 1, 2, 3, 4];
         //var sj = [0, 1, 2, 3, 4, 5, 6];
         //总站数
@@ -1087,8 +943,9 @@ var wmaps = function() {
 
     function twoBusPoint(qd, zd) {
         var xsnodes = [];
+        //公交线路的长度
         var sj = [5, 6, 7, 8, 9];
-        //var sj = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+        
         //总站数
         var sjlength = sj.length;
         var xszs;
@@ -1097,7 +954,7 @@ var wmaps = function() {
         } else if ((zd - qd) < 0) {
             xszs = sjlength + (zd - qd);
         }
-        //起点站下标+行驶站数
+        //起点站下标+行驶站数＝结束站
         var end = qd + xszs;
         for (var i = (qd - 5); i <= (end - 5); i++) {
             //如果当前站下标大于或等于总站长度则说明一圈已经走完需要下一圈开始
@@ -1123,23 +980,24 @@ var wmaps = function() {
         var line2 = 5;
         var qd1, zd1, qd2, zd2;
         //在这里我们设定换乘站为 换乘站应该使用变量定义
-        var x = 0 ;
+        var x = 0;
+        var hc1=2,hc2=5;
         if (zd >= line1 && qd < line1) {
             qd1 = qd;
             //换乘站1
-            zd1 = 2;
+            zd1 = hc1;
             //换乘站2
-            qd2 = 5;
+            qd2 = hc2;
             zd2 = zd;
             node1 = oneBusPoint(qd1, zd1);
             node2 = twoBusPoint(qd2, zd2);
             allnodes = $.merge(node1, node2);
             return allnodes;
         } else if (qd >= line1 && zd < line1) {
-            qd1 = 2;
+            qd1 = hc1;
             zd1 = zd;
             qd2 = qd;
-            zd2 = 5;
+            zd2 = hc2;
             node1 = oneBusPoint(qd1, zd1);
             node2 = twoBusPoint(qd2, zd2);
             allnodes = $.merge(node2, node1);
@@ -1229,26 +1087,3 @@ var wmaps = function() {
     };
 };
 
-
-/*
-
-1   105.39961111447532  27.19139475853698   1   1   16
-2   105.3996110344963   27.191394636563309  1   7   16
-3   105.39968066113993  27.191459298914314  1   2   16 
-4   105.39982592692373  27.191487940745933  1   3   16 换乘
-5   105.40004687259545  27.191345926152     1   4   16
-6   105.39990122860354  27.19120426927282   1   5   16
-7   105.39961942488763  27.191252640440752  1   6   16
-8   105.40062140612662  27.192524057619341  1   7   16
-9   105.40062147677709  27.192524260810554  1   15  16
-10  105.4004181119974   27.191939382394281  1   8   16
-11  105.40022570992932  27.191386032807159  1   9   16
-12  105.40009650024739  27.1915304445673    1   10  16
-13  105.39989600703702  27.191559843495209  1   11  16 换乘
-14  105.39972824899976  27.191750171434784  1   12  16
-15  105.40008020339452  27.191982081561576  1   13  16
-16  105.40032862981468  27.192413173337453  1   14  16
-
-105.400046872595 27.191345926152
-
-*/
